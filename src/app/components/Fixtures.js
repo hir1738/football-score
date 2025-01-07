@@ -128,7 +128,6 @@ const Fixtures = () => {
 
   return (
     <div className="flex h-screen bg-[#222222]">
-      {/* Mobile Menu Button */}
       <button
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
         className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-[#303030] rounded-md"
@@ -140,7 +139,6 @@ const Fixtures = () => {
         )}
       </button>
 
-      {/* Sidebar */}
       <div className={`
         fixed inset-y-0 left-0 transform lg:relative
         w-64 bg-[#303030] p-4 transition-transform duration-300 ease-in-out z-40
@@ -149,9 +147,7 @@ const Fixtures = () => {
         <Sidebar />
       </div>
 
-      {/* Main Content */}
       <div className="flex-1 p-4 lg:p-6 ml-0 lg:ml-0">
-        {/* Date Navigation */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 mt-12 lg:mt-0">
           <div className="flex flex-wrap gap-2 mb-4 sm:mb-0">
             {getDates().map((d) => (
@@ -207,8 +203,6 @@ const Fixtures = () => {
             </PopoverContent>
           </Popover>
         </div>
-
-        {/* Fixtures Content */}
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
             <div className="w-8 h-8 border-4 border-[#C3CD5A] border-t-transparent rounded-full animate-spin" />
