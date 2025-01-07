@@ -1,5 +1,7 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
+i have used most basic thing also when user changes the date he is able to see the matches for that given date 
+
 ## Getting Started
 
 First, run the development server:
