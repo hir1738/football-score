@@ -1,252 +1,245 @@
-'use client'
+"use client";
 
-import React, { useState } from 'react';
-import { Search, Home, Users, MapPin, MessageSquare, Bell, Settings, Download, Sun, Calendar, ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
-import { format, addDays, subDays } from 'date-fns';
+import React, { useState } from "react";
+import { Search, Menu, X, BookmarkIcon } from "lucide-react";
+import { format, addDays, parseISO } from "date-fns";
+import { useQuery } from "@tanstack/react-query";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { useQuery } from '@tanstack/react-query';
+import Sidebar from "./Sidebar";
+import Trending from "./Trending";
 
 const Fixtures = () => {
   const [date, setDate] = useState(new Date());
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
-  const { data: fixtures, isLoading } = useQuery({
-    queryKey: ['fixtures', format(date, 'yyyy-MM-dd')],
+  const { data: apiResponse, isLoading } = useQuery({
+    queryKey: ["fixtures", format(date, "yyyy-MM-dd")],
     queryFn: async () => {
-      const response = await fetch(`/api/fixtures?date=${format(date, 'yyyy-MM-dd')}`);
-      if (!response.ok) throw new Error('Failed to fetch fixtures');
-      return response.json();
-    }
+      try {
+        const response = await fetch(`/api/fixtures?date=${format(date, "yyyy-MM-dd")}`);
+        if (!response.ok) throw new Error("Failed to fetch fixtures");
+        const data = await response.json();
+        console.log("Fetched data:", data);
+        return data;
+      } catch (error) {
+        console.error("Error fetching fixtures:", error);
+        return { data: [] };
+      }
+    },
   });
+
+  const fixtures = apiResponse?.data || [];
 
   const getDates = () => {
     const dates = [];
-    for (let i = -2; i <= 3; i++) {
-      const currentDate = i === 0 ? date : i < 0 ? subDays(date, Math.abs(i)) : addDays(date, i);
-      let label = format(currentDate, 'EEEE');
-      const today = new Date();
-      const isToday = format(currentDate, 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd');
-      const isYesterday = format(currentDate, 'yyyy-MM-dd') === format(subDays(today, 1), 'yyyy-MM-dd');
-      const isTomorrow = format(currentDate, 'yyyy-MM-dd') === format(addDays(today, 1), 'yyyy-MM-dd');
-
-      if (isYesterday) label = 'Yesterday';
-      if (isToday) label = 'Today';
-      if (isTomorrow) label = 'Tomorrow';
+    for (let i = -3; i <= 3; i++) {
+      const currentDate = addDays(date, i);
+      const dateStr = format(currentDate, "dd MMM");
+      const fullDateStr = format(currentDate, "yyyy-MM-dd");
+      const today = format(new Date(), "yyyy-MM-dd");
+      
+      let label = format(currentDate, "EEE");
+      if (fullDateStr === today) label = "Today";
       
       dates.push({
         label,
-        date: format(currentDate, 'dd MMM'),
+        date: dateStr,
         fullDate: currentDate,
-        active: format(currentDate, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')
+        isActive: fullDateStr === format(date, "yyyy-MM-dd")
       });
     }
     return dates;
   };
 
+  const groupFixturesByLeague = (fixturesData) => {
+    if (!fixturesData || !Array.isArray(fixturesData)) return {};
+    
+    console.log("Grouping fixtures:", fixturesData);
+    
+    const leagueNames = {
+      501: "Scottish Premiership",
+    };
+    
+    const grouped = fixturesData.reduce((acc, fixture) => {
+      const leagueId = fixture.league_id;
+      if (!acc[leagueId]) {
+        acc[leagueId] = {
+          id: leagueId,
+          name: leagueNames[leagueId] || `League ${leagueId}`,
+          matches: []
+        };
+      }
+      acc[leagueId].matches.push({
+        id: fixture.id,
+        name: fixture.name,
+        starting_at: fixture.starting_at,
+        state_id: fixture.state_id
+      });
+      return acc;
+    }, {});
+
+    console.log("Grouped fixtures:", grouped); // Debug log
+    return grouped;
+  };
+
   const handleCalendarSelect = (newDate) => {
-    if (newDate) {
-      setDate(newDate);
-      setIsCalendarOpen(false);
-    }
+    setDate(newDate);
+    setIsCalendarOpen(false);
   };
 
-  const CustomCalendarHeader = ({
-    currentMonth,
-    onPreviousMonth,
-    onNextMonth,
-  }) => {
-    const month = format(currentMonth, 'MMMM yyyy');
-    return (
-      <div className="flex justify-between items-center px-2 py-1">
-        <button onClick={onPreviousMonth} className="p-1 hover:bg-[#C3CD5A]/10 rounded-md">
-          <ChevronLeft className="h-4 w-4 text-gray-300" />
-        </button>
-        <div className="text-gray-300 text-sm font-medium">
-          {month}
-        </div>
-        <button onClick={onNextMonth} className="p-1 hover:bg-[#C3CD5A]/10 rounded-md">
-          <ChevronRight className="h-4 w-4 text-gray-300" />
-        </button>
-      </div>
-    );
-  };
-
-  const filteredFixtures = fixtures?.data?.filter(fixture =>
-    fixture.name?.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
-
-  const Sidebar = () => (
-    <div className="flex flex-col h-full">
-      <div className="mb-8">
-        <h1 className="text-[#C3CD5A] text-xl font-bold">FOOTBALLSHURU</h1>
-      </div>
-      
-      <div className="relative mb-6">
-        <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-        <input
-          type="text"
-          placeholder="Search"
-          className="w-full bg-[#222222] pl-10 pr-4 py-2 rounded-md text-gray-300"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </div>
-
-      <nav className="space-y-4 flex-1">
-        {[
-          { icon: Home, label: 'Home', active: true },
-          { icon: Users, label: 'Leader Board' },
-          { icon: MapPin, label: 'Ground' },
-          { icon: MessageSquare, label: 'Chat' },
-          { icon: Bell, label: 'Notification' },
-        ].map((item) => (
-          <a
-            key={item.label}
-            href="#"
-            className={`flex items-center space-x-3 px-3 py-2 rounded-md ${
-              item.active ? 'bg-[#C3CD5A]/10 text-[#C3CD5A]' : 'text-gray-300 hover:bg-[#C3CD5A]/10'
-            }`}
-          >
-            <item.icon className="h-5 w-5" />
-            <span>{item.label}</span>
-          </a>
-        ))}
-      </nav>
-
-      <div className="mt-auto">
-        <div className="flex items-center justify-between">
-          <Settings className="h-5 w-5 text-gray-300" />
-          <Download className="h-5 w-5 text-gray-300" />
-          <Sun className="h-5 w-5 text-gray-300" />
-        </div>
-      </div>
-    </div>
-  );
+  // Process fixtures
+  const hasFixtures = fixtures && Array.isArray(fixtures) && fixtures.length > 0;
+  const groupedFixtures = hasFixtures ? groupFixturesByLeague(fixtures) : {};
+  const hasGroupedFixtures = Object.keys(groupedFixtures).length > 0;
 
   return (
-    <div className="flex h-screen bg-[#222222]">
-      <button
-        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-[#303030] rounded-md"
+    <div className="flex h-screen bg-[#121212]">
+      <button 
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-[#252525] rounded-lg"
       >
-        {isSidebarOpen ? (
-          <X className="h-6 w-6 text-gray-300" />
-        ) : (
-          <Menu className="h-6 w-6 text-gray-300" />
-        )}
+        {isSidebarOpen ? <X className="h-6 w-6 text-gray-300" /> : <Menu className="h-6 w-6 text-gray-300" />}
       </button>
 
-      <div className={`
-        fixed inset-y-0 left-0 transform lg:relative
-        w-64 bg-[#303030] p-4 transition-transform duration-300 ease-in-out z-40
-        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      `}>
-        <Sidebar />
+      <div className={`fixed inset-y-0 left-0 transform lg:relative w-64 transition-transform duration-300 ease-in-out z-40
+        ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
+        <Sidebar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       </div>
 
-      <div className="flex-1 p-4 lg:p-6 ml-0 lg:ml-0">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 mt-12 lg:mt-0">
-          <div className="flex flex-wrap gap-2 mb-4 sm:mb-0">
-            {getDates().map((d) => (
-              <button
-                key={d.date}
-                onClick={() => setDate(d.fullDate)}
-                className={`px-3 sm:px-4 py-2 rounded-md transition-colors ${
-                  d.active ? 'bg-[#C3CD5A]/10 text-[#C3CD5A]' : 'text-gray-300 hover:bg-[#303030]'
-                }`}
-              >
-                <div className="text-xs sm:text-sm font-medium">{d.label}</div>
-                <div className="text-xs opacity-80">{d.date}</div>
-              </button>
-            ))}
-          </div>
-          <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-            <PopoverTrigger asChild>
-              <button className="p-2 rounded-md bg-[#303030] text-gray-300 hover:bg-[#C3CD5A]/10 transition-colors">
-                <Calendar className="h-5 w-5" />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 bg-[#222222] border-[#404040]">
-              <CalendarComponent
-                mode="single"
-                selected={date}
-                onSelect={handleCalendarSelect}
-                className="rounded-md border-0 bg-[#222222]"
-                components={{
-                  Header: CustomCalendarHeader
-                }}
-                classNames={{
-                  months: "bg-[#222222]",
-                  month: "space-y-4",
-                  caption: "flex justify-center pt-1 relative items-center bg-[#222222]",
-                  caption_label: "text-sm font-medium text-gray-300",
-                  nav: "space-x-1 flex items-center bg-[#222222]",
-                  nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
-                  nav_button_previous: "absolute left-1",
-                  nav_button_next: "absolute right-1",
-                  table: "w-full border-collapse space-y-1 bg-[#222222]",
-                  head_row: "flex bg-[#222222]",
-                  head_cell: "text-gray-400 rounded-md w-8 font-normal text-[0.8rem]",
-                  row: "flex w-full mt-2 bg-[#222222]",
-                  cell: "text-center text-sm p-0 relative [&:has([aria-selected])]:bg-[#222222]",
-                  day: "h-8 w-8 p-0 font-normal text-gray-300 aria-selected:opacity-100 hover:bg-[#C3CD5A]/10 rounded-md",
-                  day_selected: "bg-[#C3CD5A] text-[#222222] hover:bg-[#C3CD5A]",
-                  day_today: "bg-[#C3CD5A]/10 text-[#C3CD5A] font-semibold",
-                  day_outside: "text-gray-400 opacity-50",
-                  day_disabled: "text-gray-400 opacity-50",
-                  day_hidden: "invisible",
-                }}
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-        {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="w-8 h-8 border-4 border-[#C3CD5A] border-t-transparent rounded-full animate-spin" />
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {filteredFixtures.length > 0 ? (
-              filteredFixtures.map((fixture) => (
-                <div
-                  key={fixture.id}
-                  className="bg-[#303030] hover:bg-[#404040] p-3 sm:p-4 rounded-lg transition-colors"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-gray-400 text-xs sm:text-sm">
-                        {fixture.league_id ? `League ${fixture.league_id}` : 'League'}
-                      </span>
-                      {fixture.leg && (
-                        <>
-                          <span className="text-gray-400 text-xs sm:text-sm">•</span>
-                          <span className="text-gray-400 text-xs sm:text-sm">{fixture.leg}</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-4 sm:space-x-8">
-                    <div className="w-12 sm:w-16 text-gray-300 text-xs sm:text-sm">
-                      {format(new Date(fixture.starting_at), 'HH:mm')}
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-gray-300 text-sm sm:text-base">
-                        {fixture.name}
+      <div className="flex-1 overflow-hidden">
+        <div className="max-w-6xl mx-auto p-6">
+          <div className="flex gap-6">
+            <div className="flex-1">
+              <div className="mb-8 rounded-xl overflow-hidden h-48">
+                <img src="/api/placeholder/1200/300" alt="Football banner" className="w-full h-full object-cover" />
+              </div>
+
+              <div className="flex items-center gap-4 mb-6">
+                <div className="flex items-center gap-2 bg-[#1A1A1A] px-3 py-2 rounded-lg">
+                  <div className="w-2 h-2 bg-[#C3CD5A] rounded-full"></div>
+                  <span className="text-gray-300 text-sm">Live</span>
+                  <span className="text-gray-300 text-sm">(1)</span>
+                </div>
+
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                  <input 
+                    type="text" 
+                    placeholder="Search For Matches"
+                    value={searchQuery} 
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-[#1A1A1A] pl-10 pr-4 py-2 rounded-lg text-gray-300 text-sm focus:outline-none" 
+                  />
+                </div>
+
+                <select className="bg-[#1A1A1A] text-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none">
+                  <option>All Matches</option>
+                </select>
+              </div>
+
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex space-x-2">
+                  {getDates().map((d, index) => (
+                    <button 
+                      key={index} 
+                      onClick={() => setDate(d.fullDate)}
+                      className={`px-4 py-2 rounded-lg text-sm ${
+                        d.isActive ? "bg-[#C3CD5A] text-black" : "bg-[#1A1A1A] text-gray-300"
+                      }`}
+                    >
+                      <div className="font-medium">{d.label}</div>
+                      <div className="text-xs mt-1">{d.date}</div>
+                    </button>
+                  ))}
+                </div>
+
+                <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                  <PopoverTrigger asChild>
+                    <button className="px-4 py-2 bg-[#1A1A1A] text-gray-300 rounded-lg text-sm hover:bg-[#252525]">
+                      View Calendar
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-[#1A1A1A] border-[#252525]">
+                    <CalendarComponent
+                      mode="single"
+                      selected={date}
+                      onSelect={handleCalendarSelect}
+                      className="rounded-lg border-0"
+                      classNames={{
+                        months: "space-y-4",
+                        month: "space-y-4",
+                        caption: "flex justify-center pt-1 relative items-center text-gray-100",
+                        caption_label: "text-sm font-medium",
+                        nav: "space-x-1 flex items-center",
+                        nav_button: "h-7 w-7 bg-[#252525] hover:bg-[#303030] rounded-md flex items-center justify-center text-gray-300",
+                        nav_button_previous: "absolute left-1",
+                        nav_button_next: "absolute right-1",
+                        table: "w-full border-collapse space-y-1",
+                        head_row: "flex",
+                        head_cell: "text-gray-400 rounded-md w-9 font-normal text-[0.8rem]",
+                        row: "flex w-full mt-2",
+                        cell: "text-center text-sm relative p-0 hover:bg-[#252525] rounded-md focus-within:relative focus-within:z-20",
+                        day: "h-9 w-9 p-0 font-normal text-gray-100 hover:bg-[#252525] rounded-md aria-selected:opacity-100",
+                        day_selected: "bg-[#C3CD5A] text-black hover:bg-[#C3CD5A] hover:text-black focus:bg-[#C3CD5A] focus:text-black",
+                        day_today: "bg-[#252525] text-gray-100",
+                        day_outside: "text-gray-600 opacity-50",
+                        day_disabled: "text-gray-600",
+                        day_range_middle: "aria-selected:bg-[#252525] aria-selected:text-gray-100",
+                        day_hidden: "invisible",
+                      }}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {isLoading ? (
+                <div className="flex justify-center items-center h-64">
+                  <div className="w-8 h-8 border-4 border-[#C3CD5A] border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : !hasFixtures ? (
+                <div className="flex justify-center items-center h-64 bg-[#1A1A1A] rounded-lg">
+                  <p className="text-gray-400 text-lg">No Matches for the given date</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {Object.values(groupedFixtures).map((league) => (
+                    <div key={league.id} className="bg-[#1A1A1A] rounded-lg overflow-hidden">
+                      <div className="px-4 py-3 bg-[#252525] flex items-center gap-2">
+                        <img src="/api/placeholder/20/20" alt={league.name} className="w-5 h-5" />
+                        <span className="text-gray-300 text-sm">{league.name}</span>
+                      </div>
+
+                      <div className="p-4 space-y-4">
+                        {league.matches.map((match) => (
+                          <div key={match.id} className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                              <span className="text-[#C3CD5A] w-12 text-sm">
+                                {format(parseISO(match.starting_at), "HH:mm")}
+                              </span>
+                              <span className="text-gray-300">{match.name}</span>
+                              {match.state_id === 1 && (
+                                <span className="ml-2 text-xs px-2 py-0.5 bg-[#C3CD5A] text-black rounded-full">
+                                  Live
+                                </span>
+                              )}
+                            </div>
+                            <BookmarkIcon className="h-5 w-5 text-gray-400 hover:text-[#C3CD5A] cursor-pointer" />
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
-              ))
-            ) : (
-              <div className="flex justify-center items-center h-64 text-gray-400">
-                No matches available for this date
-              </div>
-            )}
+              )}
+            </div>
+            <div className="hidden lg:block w-80">
+              <Trending />
+            </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
