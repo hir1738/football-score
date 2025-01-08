@@ -16,15 +16,7 @@ const Sidebar = ({ searchQuery, setSearchQuery }) => {
   return (
     <div className="flex flex-col h-full bg-[#1A1A1A]">
       <div className="p-4 space-y-6">
-        {/* <h1 className="text-xl font-bold">
-          <span className="text-white">FOOTBALL</span>
-          <span className="text-[#C3CD5A]">SHURU</span>
-        </h1> */}
-        <img
-          src="/footballshuru.png"
-          alt="Main Logo"
-        //   className="w-full h-full"
-        />
+        <img src="/footballshuru.png" alt="Main Logo" />
 
         <div className="relative">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
