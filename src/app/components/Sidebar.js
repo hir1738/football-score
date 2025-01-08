@@ -1,15 +1,31 @@
-import React from 'react';
-import { Search, Home, Users, MapPin, MessageSquare, Bell, Settings, Download, Sun, Moon } from 'lucide-react';
+import React from "react";
+import {
+  Search,
+  Home,
+  Users,
+  MapPin,
+  MessageSquare,
+  Bell,
+  Settings,
+  Download,
+  Sun,
+  Moon,
+} from "lucide-react";
 
 const Sidebar = ({ searchQuery, setSearchQuery }) => {
   return (
     <div className="flex flex-col h-full bg-[#1A1A1A]">
       <div className="p-4 space-y-6">
-        <h1 className="text-xl font-bold">
+        {/* <h1 className="text-xl font-bold">
           <span className="text-white">FOOTBALL</span>
           <span className="text-[#C3CD5A]">SHURU</span>
-        </h1>
-        
+        </h1> */}
+        <img
+          src="/footballshuru.png"
+          alt="Main Logo"
+        //   className="w-full h-full"
+        />
+
         <div className="relative">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
           <input
@@ -24,23 +40,38 @@ const Sidebar = ({ searchQuery, setSearchQuery }) => {
 
       <nav className="px-2 mt-2">
         <div className="space-y-1">
-          <a href="#" className="flex items-center space-x-3 px-4 py-3 text-[#C3CD5A] rounded-lg bg-[#252525]/50">
+          <a
+            href="#"
+            className="flex items-center space-x-3 px-4 py-3 text-[#C3CD5A] rounded-lg bg-[#252525]/50"
+          >
             <Home className="h-5 w-5" />
             <span className="font-medium">Home</span>
           </a>
-          <a href="#" className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-[#252525]/50 rounded-lg transition-colors">
+          <a
+            href="#"
+            className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-[#252525]/50 rounded-lg transition-colors"
+          >
             <Users className="h-5 w-5" />
             <span>Leader Board</span>
           </a>
-          <a href="#" className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-[#252525]/50 rounded-lg transition-colors">
+          <a
+            href="#"
+            className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-[#252525]/50 rounded-lg transition-colors"
+          >
             <MapPin className="h-5 w-5" />
             <span>Ground</span>
           </a>
-          <a href="#" className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-[#252525]/50 rounded-lg transition-colors">
+          <a
+            href="#"
+            className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-[#252525]/50 rounded-lg transition-colors"
+          >
             <MessageSquare className="h-5 w-5" />
             <span>Chat</span>
           </a>
-          <a href="#" className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-[#252525]/50 rounded-lg transition-colors">
+          <a
+            href="#"
+            className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-[#252525]/50 rounded-lg transition-colors"
+          >
             <Bell className="h-5 w-5" />
             <span>Notification</span>
           </a>
@@ -54,32 +85,44 @@ const Sidebar = ({ searchQuery, setSearchQuery }) => {
               <Users className="h-5 w-5" />
               <span>Followed Team</span>
             </div>
-            <span className="text-xs bg-[#252525] px-2 py-1 rounded-full">3</span>
+            <span className="text-xs bg-[#252525] px-2 py-1 rounded-full">
+              3
+            </span>
           </button>
           <button className="w-full flex items-center justify-between px-4 py-3 text-gray-300 hover:bg-[#252525]/50 rounded-lg transition-colors">
             <div className="flex items-center space-x-3">
               <Users className="h-5 w-5" />
               <span>Followed Players</span>
             </div>
-            <span className="text-xs bg-[#252525] px-2 py-1 rounded-full">12</span>
+            <span className="text-xs bg-[#252525] px-2 py-1 rounded-full">
+              12
+            </span>
           </button>
           <button className="w-full flex items-center justify-between px-4 py-3 text-gray-300 hover:bg-[#252525]/50 rounded-lg transition-colors">
             <div className="flex items-center space-x-3">
               <MapPin className="h-5 w-5" />
               <span>Followed Ground</span>
             </div>
-            <span className="text-xs bg-[#252525] px-2 py-1 rounded-full">2</span>
+            <span className="text-xs bg-[#252525] px-2 py-1 rounded-full">
+              2
+            </span>
           </button>
         </div>
       </div>
 
       <div className="mt-auto p-4 space-y-4">
         <div className="space-y-1">
-          <a href="#" className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-[#252525]/50 rounded-lg transition-colors">
+          <a
+            href="#"
+            className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-[#252525]/50 rounded-lg transition-colors"
+          >
             <Settings className="h-5 w-5" />
             <span>Settings</span>
           </a>
-          <a href="#" className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-[#252525]/50 rounded-lg transition-colors">
+          <a
+            href="#"
+            className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-[#252525]/50 rounded-lg transition-colors"
+          >
             <Download className="h-5 w-5" />
             <span>Download The App</span>
           </a>
