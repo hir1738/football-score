@@ -95,7 +95,7 @@ const Fixtures = () => {
   const groupedFixtures = hasFixtures ? groupFixturesByLeague(fixtures) : {};
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-[#121212]">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-[#121212] overflow-x-hidden">
       <button
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
         className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-[#252525] rounded-lg"
@@ -107,9 +107,8 @@ const Fixtures = () => {
         )}
       </button>
       <div
-        className={`lg:w-64 bg-[#121212] ${
-          isSidebarOpen ? "fixed inset-0 z-40 w-64" : "hidden lg:block"
-        }`}
+        className={`fixed lg:static lg:w-64 bg-[#121212] h-full transition-transform duration-300 z-40
+          ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
         <Sidebar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       </div>
