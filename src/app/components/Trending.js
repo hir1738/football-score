@@ -1,28 +1,60 @@
 import React from 'react';
-import { ChevronRight, BookmarkIcon } from 'lucide-react';
+import { BookmarkIcon, ChevronRight } from 'lucide-react';
 
 const Trending = () => {
+  const trendingNews = [
+    {
+      id: 1,
+      title: "Results And Scores From The Premier League...!!",
+      image: "/api/placeholder/40/40",
+      timeAgo: "5 Hours Ago"
+    },
+    {
+      id: 2,
+      title: "Results And Scores From The Premier League...!!",
+      image: "/api/placeholder/40/40",
+      timeAgo: "5 Hours Ago"
+    },
+    {
+      id: 3,
+      title: "Results And Scores From The Premier League...!!",
+      image: "/api/placeholder/40/40",
+      timeAgo: "5 Hours Ago"
+    },
+    {
+      id: 4,
+      title: "Results And Scores From The Premier League...!!",
+      image: "/api/placeholder/40/40",
+      timeAgo: "5 Hours Ago"
+    },
+    {
+      id: 5,
+      title: "Results And Scores From The Premier League...!!",
+      image: "/api/placeholder/40/40",
+      timeAgo: "5 Hours Ago"
+    }
+  ];
+
   return (
-    <div className="w-80 p-4 bg-[#1A1A1A] rounded-lg">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-gray-300 font-medium">Trending News</h2>
-        <ChevronRight className="h-5 w-5 text-[#C3CD5A]" />
+    <div>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-white text-sm font-medium">Trending News</h3>
+        <ChevronRight className="w-4 h-4 text-[#C3CD5A]" />
       </div>
+
       <div className="space-y-4">
-        {[1, 2, 3, 4, 5].map((item) => (
-          <div key={item} className="flex items-start space-x-3">
-            <img 
-              src="/api/placeholder/80/60" 
-              alt="News thumbnail" 
-              className="w-20 h-16 rounded-lg object-cover"
+        {trendingNews.map((news) => (
+          <div key={news.id} className="flex items-start gap-3 group">
+            <img
+              src={news.image}
+              alt="News thumbnail"
+              className="w-10 h-10 rounded object-cover"
             />
             <div className="flex-1">
-              <h3 className="text-gray-300 text-sm font-medium line-clamp-2">
-                Results And Scores From The Premier League...!!
-              </h3>
-              <p className="text-gray-500 text-xs mt-1">5 Hours Ago</p>
+              <h4 className="text-white text-sm leading-tight mb-1">{news.title}</h4>
+              <span className="text-gray-400 text-xs">{news.timeAgo}</span>
             </div>
-            <BookmarkIcon className="h-5 w-5 text-gray-400 hover:text-[#C3CD5A] cursor-pointer" />
+            <BookmarkIcon className="w-5 h-5 text-gray-400 hover:text-[#C3CD5A] cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
         ))}
       </div>

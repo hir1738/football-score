@@ -57,13 +57,11 @@ const Fixtures = () => {
   const groupFixturesByLeague = (fixturesData) => {
     if (!fixturesData || !Array.isArray(fixturesData)) return {};
     
-    console.log("Grouping fixtures:", fixturesData);
-    
     const leagueNames = {
       501: "Scottish Premiership",
     };
     
-    const grouped = fixturesData.reduce((acc, fixture) => {
+    return fixturesData.reduce((acc, fixture) => {
       const leagueId = fixture.league_id;
       if (!acc[leagueId]) {
         acc[leagueId] = {
@@ -80,7 +78,6 @@ const Fixtures = () => {
       });
       return acc;
     }, {});
-    return grouped;
   };
 
   const handleCalendarSelect = (newDate) => {
@@ -88,41 +85,42 @@ const Fixtures = () => {
     setIsCalendarOpen(false);
   };
 
-  // Process fixtures
-  const hasFixtures = fixtures && Array.isArray(fixtures) && fixtures.length > 0;
+  const hasFixtures = fixtures && fixtures.length > 0;
   const groupedFixtures = hasFixtures ? groupFixturesByLeague(fixtures) : {};
-  const hasGroupedFixtures = Object.keys(groupedFixtures).length > 0;
 
   return (
-    <div className="flex h-screen bg-[#121212]">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-[#121212]">
       <button 
         onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
         className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-[#252525] rounded-lg"
       >
         {isSidebarOpen ? <X className="h-6 w-6 text-gray-300" /> : <Menu className="h-6 w-6 text-gray-300" />}
       </button>
-
-      <div className={`fixed inset-y-0 left-0 transform lg:relative w-64 transition-transform duration-300 ease-in-out z-40
-        ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
+      <div 
+        className={`lg:w-64 bg-[#121212] ${
+          isSidebarOpen 
+            ? "fixed inset-0 z-40 w-64" 
+            : "hidden lg:block"
+        }`}
+      >
         <Sidebar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       </div>
-
-      <div className="flex-1 overflow-hidden">
-        <div className="max-w-6xl mx-auto p-6">
-          <div className="flex gap-6">
-            <div className="flex-1">
+      <div className="flex-1">
+        <div className="container mx-auto px-4 py-6 max-w-[1440px] lg:px-8">
+          <div className="flex flex-col lg:flex-row gap-6">
+            <div className="flex-1 min-w-0">
               <div className="mb-8 rounded-xl overflow-hidden h-48">
                 <img src="/api/placeholder/1200/300" alt="Football banner" className="w-full h-full object-cover" />
               </div>
 
-              <div className="flex items-center gap-4 mb-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6">
                 <div className="flex items-center gap-2 bg-[#1A1A1A] px-3 py-2 rounded-lg">
                   <div className="w-2 h-2 bg-[#C3CD5A] rounded-full"></div>
                   <span className="text-gray-300 text-sm">Live</span>
                   <span className="text-gray-300 text-sm">(1)</span>
                 </div>
 
-                <div className="relative flex-1">
+                <div className="relative flex-1 w-full sm:w-auto">
                   <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                   <input 
                     type="text" 
@@ -133,30 +131,33 @@ const Fixtures = () => {
                   />
                 </div>
 
-                <select className="bg-[#1A1A1A] text-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none">
+                <select className="bg-[#1A1A1A] text-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none w-full sm:w-auto">
                   <option>All Matches</option>
                 </select>
               </div>
 
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex space-x-2">
-                  {getDates().map((d, index) => (
-                    <button 
-                      key={index} 
-                      onClick={() => setDate(d.fullDate)}
-                      className={`px-4 py-2 rounded-lg text-sm ${
-                        d.isActive ? "bg-[#C3CD5A] text-black" : "bg-[#1A1A1A] text-gray-300"
-                      }`}
-                    >
-                      <div className="font-medium">{d.label}</div>
-                      <div className="text-xs mt-1">{d.date}</div>
-                    </button>
-                  ))}
+              {/* Date Selector */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                <div className="flex overflow-x-auto pb-2 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0">
+                  <div className="flex space-x-2">
+                    {getDates().map((d, index) => (
+                      <button 
+                        key={index} 
+                        onClick={() => setDate(d.fullDate)}
+                        className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm ${
+                          d.isActive ? "bg-[#C3CD5A] text-black" : "bg-[#1A1A1A] text-gray-300"
+                        }`}
+                      >
+                        <div className="font-medium">{d.label}</div>
+                        <div className="text-xs mt-1">{d.date}</div>
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                   <PopoverTrigger asChild>
-                    <button className="px-4 py-2 bg-[#1A1A1A] text-gray-300 rounded-lg text-sm hover:bg-[#252525]">
+                    <button className="px-4 py-2 bg-[#1A1A1A] text-gray-300 rounded-lg text-sm hover:bg-[#252525] w-full sm:w-auto">
                       View Calendar
                     </button>
                   </PopoverTrigger>
@@ -198,31 +199,26 @@ const Fixtures = () => {
                   <div className="w-8 h-8 border-4 border-[#C3CD5A] border-t-transparent rounded-full animate-spin" />
                 </div>
               ) : !hasFixtures ? (
-                <div className="flex justify-center items-center h-64 bg-[#1A1A1A] rounded-lg">
+                <div className="mx-4 flex justify-center items-center h-64 bg-[#1A1A1A] rounded-lg">
                   <p className="text-gray-400 text-lg">No Matches for the given date</p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {Object.values(groupedFixtures).map((league) => (
-                    <div key={league.id} className="bg-[#1A1A1A] rounded-lg overflow-hidden">
+                    <div key={league.id} className="bg-[#1A1A1A]">
                       <div className="px-4 py-3 bg-[#252525] flex items-center gap-2">
                         <img src="/api/placeholder/20/20" alt={league.name} className="w-5 h-5" />
                         <span className="text-gray-300 text-sm">{league.name}</span>
                       </div>
 
-                      <div className="p-4 space-y-4">
+                      <div className="px-4 py-2 space-y-4">
                         {league.matches.map((match) => (
-                          <div key={match.id} className="flex items-center justify-between">
+                          <div key={match.id} className="flex items-center justify-between py-2">
                             <div className="flex items-center gap-4">
                               <span className="text-[#C3CD5A] w-12 text-sm">
                                 {format(parseISO(match.starting_at), "HH:mm")}
                               </span>
                               <span className="text-gray-300">{match.name}</span>
-                              {match.state_id === 1 && (
-                                <span className="ml-2 text-xs px-2 py-0.5 bg-[#C3CD5A] text-black rounded-full">
-                                  Live
-                                </span>
-                              )}
                             </div>
                             <BookmarkIcon className="h-5 w-5 text-gray-400 hover:text-[#C3CD5A] cursor-pointer" />
                           </div>
@@ -232,9 +228,17 @@ const Fixtures = () => {
                   ))}
                 </div>
               )}
+              <div className="mt-6 lg:hidden">
+                <div className="bg-[#1A1A1A] p-4">
+                  <Trending />
+                </div>
+              </div>
             </div>
-            <div className="hidden lg:block w-80">
-              <Trending />
+
+            <div className="hidden lg:block w-[280px] flex-shrink-0">
+              <div className="bg-[#1A1A1A] p-4 rounded-lg">
+                <Trending />
+              </div>
             </div>
           </div>
         </div>
