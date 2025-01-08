@@ -80,8 +80,6 @@ const Fixtures = () => {
       });
       return acc;
     }, {});
-
-    console.log("Grouped fixtures:", grouped); // Debug log
     return grouped;
   };
 
